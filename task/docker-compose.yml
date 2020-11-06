@@ -1,0 +1,33 @@
+version: '3.7'
+services:
+  web:
+    env_file:
+      - ./docker/production/.env/.env
+    build:
+      context: .
+      dockerfile: ./docker/production/web/Dockerfile
+    ports:
+      - 8000:8000
+    #entrypoint: /entrypoint.sh
+    #command: python manage.py runserver 0.0.0.0:8000
+    command: gunicorn task.wsgi:application --bind 0.0.0.0:8000
+    restart: always
+  database:
+    image: postgres:12.0-alpine
+    hostname: postgres
+    volumes:
+      - database:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+  nginx:
+    env_file:
+      - ./docker/production/.env/.env
+    ports:
+      - 80:80
+    build:
+      context: .
+      dockerfile: ./docker/production/nginx/Dockerfile
+volumes:
+  database:
